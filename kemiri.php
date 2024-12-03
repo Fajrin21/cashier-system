@@ -7,7 +7,7 @@ $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['harga'])) {
    $harga = str_replace(['Rp', '.', ' '], '', $_POST['harga']); // Menghapus "Rp", titik, dan spasi
-    $berat = $_POST['berat'];
+    $berat = floatval($_POST['berat']);
     $total = str_replace(['Rp', '.', ' '], '', $_POST['Total']); // Bersihkan juga Total
     $tanggal = $_POST['tanggal'];
 
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['harga'])) {
         $error_message = 'Semua field harus diisi!';
     } else {
         $stmt = $conn->prepare("INSERT INTO kemiri (harga, berat, total, tanggal) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param('iiis', $harga, $berat, $total, $tanggal);
+        $stmt->bind_param('idis', $harga, $berat, $total, $tanggal);
 
         if ($stmt->execute()) {
             // Setelah berhasil simpan, kembalikan URL PDF
@@ -268,7 +268,8 @@ if ($result->num_rows > 0) {
                                     </div>
                                     <div class="form-group">
                                         <label for="berat">Berat (KG)</label>
-                                        <input type="number" class="form-control" id="berat" name="berat" required>
+                                        <input type="number" class="form-control" id="berat" name="berat" required
+                                            step="0.01">
                                     </div>
                                     <div class="form-group">
                                         <label for="Total">Total</label>
