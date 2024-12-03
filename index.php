@@ -1,12 +1,13 @@
 <?php
 include 'db.php';
 
+date_default_timezone_set('Asia/Makassar');
+
 // Fungsi untuk menghitung total dari tabel tertentu
-function getTotalFromTable($tableName, $conn) {
-    $query = "SELECT SUM(total) AS total FROM $tableName"; // ganti 'total' jika kolomnya berbeda
+function getTotalFromTableByDate($tableName, $conn, $filterDate) {
+    $query = "SELECT SUM(total) AS total FROM $tableName WHERE DATE(tanggal) = '$filterDate'";
     $result = $conn->query($query);
-    
-    // Cek jika query berhasil
+
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         return $row['total'] ? $row['total'] : 0;
@@ -15,16 +16,48 @@ function getTotalFromTable($tableName, $conn) {
     }
 }
 
-// Ambil total dari masing-masing tabel
-$totalKopi = getTotalFromTable('kopi', $conn);
-$totalKemiri = getTotalFromTable('kemiri', $conn);
-$totalCoklat = getTotalFromTable('coklat', $conn);
-$totalKopra = getTotalFromTable('kopra', $conn);
+function getBersihKGFromTableByDate($tableName, $conn, $filterDate) {
+    $query = "SELECT SUM(bersih) AS bersih FROM $tableName WHERE DATE(tanggal) = '$filterDate'";
+    $result = $conn->query($query);
 
-// Hitung total keseluruhan
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return $row['bersih'] ? $row['bersih'] : 0;
+    } else {
+        return 0;
+    }
+}
+
+function getTotalKGFromTableByDate($tableName, $conn, $filterDate) {
+    $query = "SELECT SUM(berat) AS berat FROM $tableName WHERE DATE(tanggal) = '$filterDate'";
+    $result = $conn->query($query);
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return $row['berat'] ? $row['berat'] : 0;
+    } else {
+        return 0;
+    }
+}
+
+
+
+$filterDate = isset($_POST['filterDate']) ? $_POST['filterDate'] : date('Y-m-d');
+
+$totalKgKopi = getTotalKGFromTableByDate('kopi', $conn, $filterDate);
+$totalKgKemiri = getTotalKGFromTableByDate('kemiri', $conn, $filterDate);
+$totalKgCoklat = getBersihKGFromTableByDate('coklat', $conn, $filterDate);
+$totalKgKopra = getBersihKGFromTableByDate('kopra', $conn, $filterDate);
+
+$totalKopi = getTotalFromTableByDate('kopi', $conn, $filterDate);
+$totalKemiri = getTotalFromTableByDate('kemiri', $conn, $filterDate);
+$totalCoklat = getTotalFromTableByDate('coklat', $conn, $filterDate);
+$totalKopra = getTotalFromTableByDate('kopra', $conn, $filterDate);
+
 $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
 
-// Menampilkan hasil di halaman
+// echo "Waktu sekarang: " . date('Y-m-d H:i:s');
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -169,6 +202,14 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
 
                     <!-- Content Row -->
                     <!-- Content Row -->
+                    <form method="POST" action="">
+                        <div class="form-group">
+                            <label for="filterDate">Pilih Tanggal:</label>
+                            <input type="date" name="filterDate" id="filterDate" class="form-control"
+                                value="<?php echo isset($_POST['filterDate']) ? $_POST['filterDate'] : date('Y-m-d'); ?>">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </div>
+                    </form>
                     <div class="row">
                         <!-- Card for Kopra -->
                         <div class="col-xl-3 col-md-6 mb-4">
@@ -179,10 +220,21 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Coklat
                                             </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <!-- <div class="row mt-3"> -->
+                                            <div class="mb-0 font-weight-bold text-gray-800">
                                                 <p class="card-text">Rp
-                                                    <?php echo number_format($totalCoklat, 2, ',', '.'); ?></p>
+                                                    <?php echo number_format($totalCoklat, 2, ',', '.'); ?>
+                                                </p>
                                             </div>
+                                            <div>
+                                                <div class="mb-0 font-weight-bold text-gray-800">
+                                                    <p class="card-text">
+                                                        <?php echo number_format($totalKgCoklat, 2, ',', '.'); ?>
+                                                        KG
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <!-- </div> -->
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-seedling fa-2x text-gray-300"></i>
@@ -201,10 +253,18 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                 Kemiri
                                             </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <div class="mb-0 font-weight-bold text-gray-800">
                                                 <p class="card-text">Rp
                                                     <?php echo number_format($totalKemiri, 2, ',', '.'); ?>
                                                 </p>
+                                            </div>
+                                            <div>
+                                                <div class="mb-0 font-weight-bold text-gray-800">
+                                                    <p class="card-text">
+                                                        <?php echo number_format($totalKgKemiri, 2, ',', '.'); ?>
+                                                        KG
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-auto">
@@ -224,9 +284,18 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
                                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                                 Kopra
                                             </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <div class="mb-0 font-weight-bold text-gray-800">
                                                 <p class="card-text">Rp
-                                                    <?php echo number_format($totalKopra, 2, ',', '.'); ?></p>
+                                                    <?php echo number_format($totalKopra, 2, ',', '.'); ?>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <div class="mb-0 font-weight-bold text-gray-800">
+                                                    <p class="card-text">
+                                                        <?php echo number_format($totalKgKopra, 2, ',', '.'); ?>
+                                                        KG
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-auto">
@@ -245,9 +314,18 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
                                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                                 Kopi
                                             </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <div class="mb-0 font-weight-bold text-gray-800">
                                                 <p class="card-text">Rp
-                                                    <?php echo number_format($totalKopi, 2, ',', '.'); ?></p>
+                                                    <?php echo number_format($totalKopi, 2, ',', '.'); ?>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <div class="mb-0 font-weight-bold text-gray-800">
+                                                    <p class="card-text">
+                                                        <?php echo number_format($totalKgKopi, 2, ',', '.'); ?>
+                                                        KG
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-auto">
