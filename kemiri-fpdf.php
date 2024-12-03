@@ -15,7 +15,7 @@ $pdf->SetFont('Arial', 'B', 12);
 // Header - Nama Toko
 $pdf->Cell(0, 5, 'UD-Dea', 0, 1, 'C');
 $pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(0, 5, 'Data Transaksi Kopi', 0, 1, 'C');
+$pdf->Cell(0, 5, 'Data Transaksi Kemiri', 0, 1, 'C');
 $pdf->Ln(5); // Line break
 
 // Isi Data

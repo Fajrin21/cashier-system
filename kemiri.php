@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['harga'])) {
             $conn->close();
 
             // URL generator PDF
-            $pdf_url = "kopi-fpdf.php?harga=$harga&berat=$berat&total=$total&tanggal=$tanggal";
+            $pdf_url = "kemiri-fpdf.php?harga=$harga&berat=$berat&total=$total&tanggal=$tanggal";
             echo json_encode(['success' => true, 'url' => $pdf_url]);
             exit;
         } else {

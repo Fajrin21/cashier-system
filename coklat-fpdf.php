@@ -10,35 +10,39 @@ $total = $_GET['total'];
 $tanggal = $_GET['tanggal'];
 
 // Inisialisasi FPDF
-$pdf = new FPDF();
+$pdf = new FPDF('P', 'mm', array(58, 100)); // Ukuran kertas thermal 58mm x panjang dinamis
 $pdf->AddPage();
-$pdf->SetFont('Arial', 'B', 16);
+$pdf->SetFont('Arial', 'B', 12);
 
 // Header - Nama Toko
-$pdf->Cell(190, 10, 'UD-Dea', 0, 1, 'C'); // Nama toko
-$pdf->SetFont('Arial', 'B', 14);
-$pdf->Cell(190, 10, 'Data Transaksi Coklat', 0, 1, 'C');
-$pdf->Ln(10); // Line break
+$pdf->Cell(0, 5, 'UD-Dea', 0, 1, 'C');
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(0, 5, 'Data Transaksi Coklat', 0, 1, 'C');
+$pdf->Ln(5); // Line break
 
 // Isi Data
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(50, 10, 'Harga: ', 1, 0);
-$pdf->Cell(140, 10, 'Rp ' . number_format($harga, 0, ',', '.'), 1, 1);
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell(25, 5, 'Harga: ', 0, 0);
+$pdf->Cell(0, 5, 'Rp ' . number_format($harga, 0, ',', '.'), 0, 1);
 
-$pdf->Cell(50, 10, 'Berat: ', 1, 0);
-$pdf->Cell(140, 10, $berat . ' kg', 1, 1);
+$pdf->Cell(25, 5, 'Berat: ', 0, 0);
+$pdf->Cell(0, 5, $berat . ' kg', 0, 1);
 
-$pdf->Cell(50, 10, 'Potongan: ', 1, 0);
-$pdf->Cell(140, 10, $potongan . ' Kg', 1, 1);
+$pdf->Cell(25, 5, 'Potongan: ', 0, 0);
+$pdf->Cell(0, 5, $potongan . ' kg', 0, 1);
 
-$pdf->Cell(50, 10, 'Bersih: ', 1, 0);
-$pdf->Cell(140, 10, $bersih . ' kg', 1, 1);
+$pdf->Cell(25, 5, 'Bersih: ', 0, 0);
+$pdf->Cell(0, 5, $bersih . ' kg', 0, 1);
 
-$pdf->Cell(50, 10, 'Total: ', 1, 0);
-$pdf->Cell(140, 10, 'Rp ' . number_format($total, 0, ',', '.'), 1, 1);
+$pdf->Cell(25, 5, 'Total: ', 0, 0);
+$pdf->Cell(0, 5, 'Rp ' . number_format($total, 0, ',', '.'), 0, 1);
 
-$pdf->Cell(50, 10, 'Tanggal Transaksi: ', 1, 0);
-$pdf->Cell(140, 10, $tanggal, 1, 1);
+$pdf->Cell(25, 5, 'Tanggal: ', 0, 0);
+$pdf->Cell(0, 5, $tanggal, 0, 1);
+
+// Footer (opsional)
+$pdf->Ln(10);
+$pdf->Cell(0, 5, 'Terima Kasih!', 0, 1, 'C');
 
 // Output PDF
 $pdf->Output();
