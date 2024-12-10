@@ -4,7 +4,8 @@ include 'db.php';
 date_default_timezone_set('Asia/Makassar');
 
 // Fungsi untuk menghitung total dari tabel tertentu
-function getTotalFromTableByDate($tableName, $conn, $filterDate) {
+function getTotalFromTableByDate($tableName, $conn, $filterDate)
+{
     $query = "SELECT SUM(total) AS total FROM $tableName WHERE DATE(tanggal) = '$filterDate'";
     $result = $conn->query($query);
 
@@ -16,7 +17,8 @@ function getTotalFromTableByDate($tableName, $conn, $filterDate) {
     }
 }
 
-function getBersihKGFromTableByDate($tableName, $conn, $filterDate) {
+function getBersihKGFromTableByDate($tableName, $conn, $filterDate)
+{
     $query = "SELECT SUM(bersih) AS bersih FROM $tableName WHERE DATE(tanggal) = '$filterDate'";
     $result = $conn->query($query);
 
@@ -28,7 +30,8 @@ function getBersihKGFromTableByDate($tableName, $conn, $filterDate) {
     }
 }
 
-function getTotalKGFromTableByDate($tableName, $conn, $filterDate) {
+function getTotalKGFromTableByDate($tableName, $conn, $filterDate)
+{
     $query = "SELECT SUM(berat) AS berat FROM $tableName WHERE DATE(tanggal) = '$filterDate'";
     $result = $conn->query($query);
 
@@ -48,11 +51,13 @@ $totalKgKopi = getTotalKGFromTableByDate('kopi', $conn, $filterDate);
 $totalKgKemiri = getTotalKGFromTableByDate('kemiri', $conn, $filterDate);
 $totalKgCoklat = getBersihKGFromTableByDate('coklat', $conn, $filterDate);
 $totalKgKopra = getBersihKGFromTableByDate('kopra', $conn, $filterDate);
+$totalKgMente = getTotalKGFromTableByDate('mente', $conn, $filterDate);
 
 $totalKopi = getTotalFromTableByDate('kopi', $conn, $filterDate);
 $totalKemiri = getTotalFromTableByDate('kemiri', $conn, $filterDate);
 $totalCoklat = getTotalFromTableByDate('coklat', $conn, $filterDate);
 $totalKopra = getTotalFromTableByDate('kopra', $conn, $filterDate);
+$totalMente = getTotalFromTableByDate('mente', $conn, $filterDate);
 
 $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
 
@@ -133,6 +138,12 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
                 <a class="nav-link" href="kopi.php">
                     <i class="fas fa-coffee"></i>
                     <span>Kopi</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="mente.php">
+                    <i class="fab fa-nutritionix"></i>
+                    <span>Mente</span>
                 </a>
             </li>
 
@@ -337,6 +348,38 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
                         </div>
                     </div>
 
+                    <div class="col-xl-12 col-md-12 mb-4">
+                        <div class="card border-left-primary shadow py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Mente
+                                        </div>
+                                        <!-- <div class="row mt-3"> -->
+                                        <div class="mb-0 font-weight-bold text-gray-800">
+                                            <p class="card-text">Rp
+                                                <?php echo number_format($totalMente, 2, ',', '.'); ?>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <div class="mb-0 font-weight-bold text-gray-800">
+                                                <p class="card-text">
+                                                    <?php echo number_format($totalKgMente, 2, ',', '.'); ?>
+                                                    KG
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <!-- </div> -->
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fab fa-nutritionix fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Chart Section -->
                     <div class="row">
                         <!-- Area Chart -->
@@ -413,69 +456,69 @@ $totalKeseluruhan = $totalKopi + $totalKemiri + $totalCoklat + $totalKopra;
         </div>
 
         <script>
-        // Data untuk chart Area (Earnings Overview)
-        var ctxArea = document.getElementById("myAreaChart2").getContext("2d");
-        var myAreaChart = new Chart(ctxArea, {
-            type: 'line', // Tipe grafik Area
-            data: {
-                labels: ['Kopi', 'Kemiri', 'Coklat', 'Kopra'], // Label untuk x-axis
-                datasets: [{
-                    label: 'Total Earnings',
-                    data: [<?php echo $totalKopi; ?>, <?php echo $totalKemiri; ?>,
-                        <?php echo $totalCoklat; ?>, <?php echo $totalKopra; ?>
-                    ], // Data dari PHP
-                    backgroundColor: 'rgba(78, 115, 223, 0.05)', // Warna latar belakang area
-                    borderColor: 'rgba(78, 115, 223, 1)', // Warna garis
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                scales: {
-                    x: {
-                        beginAtZero: true
+            // Data untuk chart Area (Earnings Overview)
+            var ctxArea = document.getElementById("myAreaChart2").getContext("2d");
+            var myAreaChart = new Chart(ctxArea, {
+                type: 'line', // Tipe grafik Area
+                data: {
+                    labels: ['Kopi', 'Kemiri', 'Coklat', 'Kopra', 'Mente'], // Label untuk x-axis
+                    datasets: [{
+                        label: 'Total Earnings',
+                        data: [<?php echo $totalKopi; ?>, <?php echo $totalKemiri; ?>,
+                            <?php echo $totalCoklat; ?>, <?php echo $totalKopra; ?>, <?php echo $totalMente; ?>
+                        ], // Data dari PHP
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)', // Warna latar belakang area
+                        borderColor: 'rgba(78, 115, 223, 1)', // Warna garis
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        // Data untuk chart Pie (Revenue Sources)
-        var ctxPie = document.getElementById("myPieChart2").getContext("2d");
-        var myPieChart = new Chart(ctxPie, {
-            type: 'pie', // Tipe grafik Pie
-            data: {
-                labels: ['Kopi', 'Kemiri', 'Coklat', 'Kopra'], // Label untuk pie chart
-                datasets: [{
-                    data: [<?php echo $totalKopi; ?>, <?php echo $totalKemiri; ?>,
-                        <?php echo $totalCoklat; ?>, <?php echo $totalKopra; ?>
-                    ], // Data dari PHP
-                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc',
-                        '#f6c23e'
-                    ], // Warna untuk setiap bagian
-                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf',
-                        '#e0a100'
-                    ], // Warna saat hover
-                    hoverBorderColor: "rgba(234, 236, 244, 1)",
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                var label = tooltipItem.label;
-                                var value = tooltipItem.raw;
-                                return label + ': Rp ' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g,
-                                    '$&,'); // Menampilkan angka dengan format mata uang
+            // Data untuk chart Pie (Revenue Sources)
+            var ctxPie = document.getElementById("myPieChart2").getContext("2d");
+            var myPieChart = new Chart(ctxPie, {
+                type: 'pie', // Tipe grafik Pie
+                data: {
+                    labels: ['Kopi', 'Kemiri', 'Coklat', 'Kopra', 'Mente'], // Label untuk pie chart
+                    datasets: [{
+                        data: [<?php echo $totalKopi; ?>, <?php echo $totalKemiri; ?>,
+                            <?php echo $totalCoklat; ?>, <?php echo $totalKopra; ?>, <?php echo $totalMente; ?>
+                        ], // Data dari PHP
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc',
+                            '#f6c23e', '#9b59b6'
+                        ], // Warna untuk setiap bagian
+                        hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf',
+                            '#e0a100', '#8e44ad'
+                        ], // Warna saat hover
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    var label = tooltipItem.label;
+                                    var value = tooltipItem.raw;
+                                    return label + ': Rp ' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g,
+                                        '$&,'); // Menampilkan angka dengan format mata uang
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
         </script>
 
 

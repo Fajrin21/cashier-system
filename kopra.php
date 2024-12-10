@@ -389,8 +389,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
 
                 <script>
                     $(document).ready(function() {
-                        const today = new Date().toISOString().split("T")[0];
-                        $("#tanggal").val(today);
+                        const today = new Date();
+                        const localDate = today.toLocaleDateString('en-CA'); // Format YYYY-MM-DD
+                        $("#tanggal").val(localDate);
                     });
                     $(document).ready(function() {
                         $("#berat, #potongan").on("input", function() {
