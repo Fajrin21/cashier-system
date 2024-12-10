@@ -3,10 +3,10 @@
 include 'db.php';
 
 $success_message = '';
-$error_message = ''; 
+$error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['harga'])) {
-   $harga = str_replace(['Rp', '.', ' '], '', $_POST['harga']); // Menghapus "Rp", titik, dan spasi
+    $harga = str_replace(['Rp', '.', ' '], '', $_POST['harga']); // Menghapus "Rp", titik, dan spasi
     $berat = floatval($_POST['berat']);
     $total = str_replace(['Rp', '.', ' '], '', $_POST['Total']); // Bersihkan juga Total
     $tanggal = $_POST['tanggal'];
@@ -55,6 +55,18 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $data[] = $row;
     }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_POST['delete_all'] === 'true') {
+    $sql = "DELETE FROM kemiri";
+
+    if ($conn->query($sql) === TRUE) {
+        header('Location: kemiri.php');
+    } else {
+        header('Location: kemiri.php');
+    }
+    $conn->close();
+    exit;
 }
 
 ?>
@@ -138,7 +150,12 @@ if ($result->num_rows > 0) {
                     <span>Kopi</span>
                 </a>
             </li>
-
+            <li class="nav-item">
+                <a class="nav-link" href="mente.php">
+                    <i class="fab fa-nutritionix"></i>
+                    <span>Mente</span>
+                </a>
+            </li>
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block" />
 
@@ -201,13 +218,24 @@ if ($result->num_rows > 0) {
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3 justify-content-between d-flex">
+                        <div class="card-header py-3 d-flex justify-content-between">
                             <h6 class="m-0 font-weight-bold text-primary">
                                 Tabel Data Kemiri
                             </h6>
-                            <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#inputModal">
-                                Tambah Data
-                            </button>
+                            <div class="ml-auto d-flex">
+                                <!-- Form Hapus Semua Data -->
+                                <form method="POST" class="mr-2">
+                                    <input type="hidden" name="delete_all" value="true">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Hapus Semua Data
+                                    </button>
+                                </form>
+
+                                <!-- Button Tambah Data -->
+                                <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#inputModal">
+                                    Tambah Data
+                                </button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -224,21 +252,21 @@ if ($result->num_rows > 0) {
                                     </thead>
                                     <tbody>
                                         <?php if (count($data) > 0): ?>
-                                        <?php foreach ($data as $index => $item): ?>
-                                        <tr>
-                                            <td><?= $index + 1; ?></td>
-                                            <td><?= 'Rp ' . number_format($item['harga'], 0, ',', '.'); ?></td>
-                                            <td><?=htmlspecialchars($item['berat']); ?> Kg</td>
-                                            <td><?= 'Rp ' . number_format($item['total'], 0, ',', '.'); ?></td>
-                                            <td><?= htmlspecialchars($item['tanggal']); ?></td>
-                                            <td>
-                                                <form method="POST" onsubmit="return confirmDelete(this);">
-                                                    <input type="hidden" name="delete_id" value="<?= $item['id']; ?>">
-                                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
+                                            <?php foreach ($data as $index => $item): ?>
+                                                <tr>
+                                                    <td><?= $index + 1; ?></td>
+                                                    <td><?= 'Rp ' . number_format($item['harga'], 0, ',', '.'); ?></td>
+                                                    <td><?= htmlspecialchars($item['berat']); ?> Kg</td>
+                                                    <td><?= 'Rp ' . number_format($item['total'], 0, ',', '.'); ?></td>
+                                                    <td><?= htmlspecialchars($item['tanggal']); ?></td>
+                                                    <td>
+                                                        <form method="POST" onsubmit="return confirmDelete(this);">
+                                                            <input type="hidden" name="delete_id" value="<?= $item['id']; ?>">
+                                                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -290,127 +318,127 @@ if ($result->num_rows > 0) {
                 </div>
 
                 <script>
-                document.getElementById('kemiriForm').addEventListener('submit', async function(e) {
-                    e.preventDefault(); // Cegah form dari pengiriman default
+                    document.getElementById('kemiriForm').addEventListener('submit', async function(e) {
+                        e.preventDefault(); // Cegah form dari pengiriman default
 
-                    const formData = new FormData(this);
+                        const formData = new FormData(this);
 
-                    try {
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            body: formData,
-                        });
+                        try {
+                            const response = await fetch(this.action, {
+                                method: 'POST',
+                                body: formData,
+                            });
 
-                        const result = await response.json();
+                            const result = await response.json();
 
-                        if (result.success) {
-                            // Buka tab baru dengan URL PDF
-                            window.open(result.url, '_blank');
+                            if (result.success) {
+                                // Buka tab baru dengan URL PDF
+                                window.open(result.url, '_blank');
 
-                            // Reload halaman utama setelah tab baru dibuka
-                            window.location.reload();
-                        } else {
-                            alert(result.message || 'Terjadi kesalahan!');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('Gagal mengirim data!');
-                    }
-                });
-                <?php if ($success_message): ?>
-                Swal.fire('Sukses', '<?= $success_message; ?>', 'success');
-                <?php endif; ?>
-                <?php if ($error_message): ?>
-                Swal.fire('Gagal', '<?= $error_message; ?>', 'error');
-                <?php endif; ?>
-
-                function confirmDelete(form) {
-                    Swal.fire({
-                        title: 'Yakin ingin menghapus data?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Hapus',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
+                                // Reload halaman utama setelah tab baru dibuka
+                                window.location.reload();
+                            } else {
+                                alert(result.message || 'Terjadi kesalahan!');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Gagal mengirim data!');
                         }
                     });
-                    return false;
-                }
+                    <?php if ($success_message): ?>
+                        Swal.fire('Sukses', '<?= $success_message; ?>', 'success');
+                    <?php endif; ?>
+                    <?php if ($error_message): ?>
+                        Swal.fire('Gagal', '<?= $error_message; ?>', 'error');
+                    <?php endif; ?>
+
+                    function confirmDelete(form) {
+                        Swal.fire({
+                            title: 'Yakin ingin menghapus data?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Hapus',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                        return false;
+                    }
                 </script>
 
                 <script>
-                $(document).ready(function() {
-                    const today = new Date().toISOString().split("T")[0];
-                    $("#tanggal").val(today);
-                });
-                $(document).ready(function() {
-                    $("#berat, #potongan").on("input", function() {
-                        const berat = parseFloat($("#berat").val()) || 0;
-                        const potongan = parseFloat($("#potongan").val()) || 0;
-                        const bersih = berat - potongan;
-                        $("#bersih").val(bersih);
+                    $(document).ready(function() {
+                        const today = new Date().toISOString().split("T")[0];
+                        $("#tanggal").val(today);
+                    });
+                    $(document).ready(function() {
+                        $("#berat, #potongan").on("input", function() {
+                            const berat = parseFloat($("#berat").val()) || 0;
+                            const potongan = parseFloat($("#potongan").val()) || 0;
+                            const bersih = berat - potongan;
+                            $("#bersih").val(bersih);
 
-                        const harga =
-                            parseFloat(
-                                $("#harga")
-                                .val()
-                                .replace(/[^0-9]/g, "")
-                            ) || 0;
-                        const total = harga * bersih;
-                        $("#Total").val(formatRupiah(total.toString(), "Rp"));
+                            const harga =
+                                parseFloat(
+                                    $("#harga")
+                                    .val()
+                                    .replace(/[^0-9]/g, "")
+                                ) || 0;
+                            const total = harga * bersih;
+                            $("#Total").val(formatRupiah(total.toString(), "Rp"));
+                        });
+
+                        $("#harga").on("keyup", function() {
+                            this.value = formatRupiah(this.value, "Rp");
+                        });
                     });
 
-                    $("#harga").on("keyup", function() {
-                        this.value = formatRupiah(this.value, "Rp");
-                    });
-                });
+                    function formatRupiah(value, prefix) {
+                        const numberString = value.replace(/[^,\d]/g, "").toString();
+                        const split = numberString.split(",");
+                        const sisa = split[0].length % 3;
+                        let rupiah = split[0].substr(0, sisa);
+                        const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
-                function formatRupiah(value, prefix) {
-                    const numberString = value.replace(/[^,\d]/g, "").toString();
-                    const split = numberString.split(",");
-                    const sisa = split[0].length % 3;
-                    let rupiah = split[0].substr(0, sisa);
-                    const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+                        if (ribuan) {
+                            const separator = sisa ? "." : "";
+                            rupiah += separator + ribuan.join(".");
+                        }
 
-                    if (ribuan) {
-                        const separator = sisa ? "." : "";
-                        rupiah += separator + ribuan.join(".");
+                        rupiah =
+                            split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+                        return prefix === undefined ?
+                            rupiah :
+                            rupiah ?
+                            "Rp " + rupiah :
+                            "";
                     }
 
-                    rupiah =
-                        split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
-                    return prefix === undefined ?
-                        rupiah :
-                        rupiah ?
-                        "Rp " + rupiah :
-                        "";
-                }
+                    $(document).ready(function() {
+                        $("#harga").on("keyup", function() {
+                            this.value = formatRupiah(this.value, "Rp");
+                        });
 
-                $(document).ready(function() {
-                    $("#harga").on("keyup", function() {
-                        this.value = formatRupiah(this.value, "Rp");
+                        $("#inputForm").on("submit", function(event) {
+                            event.preventDefault();
+
+                            const hargaInput = $("#harga")
+                                .val()
+                                .replace(/[^0-9]/g, "");
+                            console.log("Harga tanpa format:", hargaInput);
+
+                            const formData = $(this).serializeArray();
+                            formData.find((field) => field.name === "harga").value =
+                                hargaInput;
+
+                            console.log("Form data:", formData);
+
+                            $(this)[0].reset();
+                            $("#inputModal").modal("hide");
+                        });
                     });
-
-                    $("#inputForm").on("submit", function(event) {
-                        event.preventDefault();
-
-                        const hargaInput = $("#harga")
-                            .val()
-                            .replace(/[^0-9]/g, "");
-                        console.log("Harga tanpa format:", hargaInput);
-
-                        const formData = $(this).serializeArray();
-                        formData.find((field) => field.name === "harga").value =
-                            hargaInput;
-
-                        console.log("Form data:", formData);
-
-                        $(this)[0].reset();
-                        $("#inputModal").modal("hide");
-                    });
-                });
                 </script>
             </div>
             <footer class="sticky-footer bg-white">

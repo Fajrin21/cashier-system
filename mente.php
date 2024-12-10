@@ -1,25 +1,21 @@
 <?php
 
 include 'db.php';
-require('fpdf/fpdf.php');
 
 $success_message = '';
 $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['harga'])) {
-    $harga = str_replace(['Rp', '.', ' '], '', $_POST['harga']);
+    $harga = str_replace(['Rp', '.', ' '], '', $_POST['harga']); // Menghapus "Rp", titik, dan spasi
     $berat = floatval($_POST['berat']);
-    $bersih = floatval($_POST['bersih']);
-    $potongan = floatval($_POST['potongan']);
-    $total = str_replace(['Rp', '.', ' '], '', $_POST['Total']);
+    $total = str_replace(['Rp', '.', ' '], '', $_POST['Total']); // Bersihkan juga Total
     $tanggal = $_POST['tanggal'];
 
-    if (empty($harga) || empty($berat) || empty($potongan) || empty($bersih) || empty($total) || empty($tanggal)) {
-        echo 'Semua field harus diisi!';
+    if (empty($harga) || empty($berat) || empty($total) || empty($tanggal)) {
+        $error_message = 'Semua field harus diisi!';
     } else {
-        // Simpan ke database
-        $stmt = $conn->prepare("INSERT INTO coklat (harga, berat, potongan, bersih, total, tanggal) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param('sdssds', $harga, $berat, $potongan, $bersih, $total, $tanggal);
+        $stmt = $conn->prepare("INSERT INTO mente (harga, berat, total, tanggal) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param('idis', $harga, $berat, $total, $tanggal);
 
         if ($stmt->execute()) {
             // Setelah berhasil simpan, kembalikan URL PDF
@@ -27,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['harga'])) {
             $conn->close();
 
             // URL generator PDF
-            $pdf_url = "coklat-fpdf.php?harga=$harga&berat=$berat&potongan=$potongan&bersih=$bersih&total=$total&tanggal=$tanggal";
+            $pdf_url = "mente-fpdf.php?harga=$harga&berat=$berat&total=$total&tanggal=$tanggal";
             echo json_encode(['success' => true, 'url' => $pdf_url]);
             exit;
         } else {
@@ -41,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['harga'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $delete_id = $_POST['delete_id'];
 
-    $stmt = $conn->prepare("DELETE FROM coklat WHERE id = ?");
+    $stmt = $conn->prepare("DELETE FROM mente WHERE id = ?");
     $stmt->bind_param('i', $delete_id);
 
     if ($stmt->execute()) {
@@ -53,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
 }
 
 // Ambil data untuk ditampilkan di tabel
-$result = $conn->query("SELECT * FROM coklat ORDER BY id DESC");
+$result = $conn->query("SELECT * FROM mente ORDER BY id DESC");
 $data = [];
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -62,17 +58,16 @@ if ($result->num_rows > 0) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_POST['delete_all'] === 'true') {
-    $sql = "DELETE FROM coklat";
+    $sql = "DELETE FROM mente";
 
     if ($conn->query($sql) === TRUE) {
-        header('Location: coklat.php');
+        header('Location: mente.php');
     } else {
-        header('Location: coklat.php');
+        header('Location: mente.php');
     }
     $conn->close();
     exit;
 }
-
 
 ?>
 <!DOCTYPE html>
@@ -98,6 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
 
     <!-- Custom styles for this page -->
@@ -131,14 +128,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
             <div class="sidebar-heading">Input</div>
 
             <!-- Nav Item - Tables -->
-            <li class="nav-item active">
+            <li class="nav-item ">
                 <a class="nav-link" href="coklat.php">
                     <i class="fas fa-seedling"></i>
                     <span>Coklat</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="kemiri.php">
+                <a class="nav-link" href="Kemiri.php">
                     <i class="fas fa-leaf"></i>
                     <span>Kemiri</span>
                 </a>
@@ -155,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                     <span>Kopi</span>
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="mente.php">
                     <i class="fab fa-nutritionix"></i>
                     <span>Mente</span>
@@ -224,9 +221,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3 justify-content-between d-flex">
+                        <div class="card-header py-3 d-flex justify-content-between">
                             <h6 class="m-0 font-weight-bold text-primary">
-                                Tabel Data Coklat
+                                Tabel Data mente
                             </h6>
                             <div class="ml-auto d-flex">
                                 <!-- Form Hapus Semua Data -->
@@ -251,8 +248,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                                             <th>No</th>
                                             <th>Harga</th>
                                             <th>Berat (KG)</th>
-                                            <th>Potongan</th>
-                                            <th>Bersih</th>
                                             <th>Total</th>
                                             <th>Tanggal</th>
                                             <th>Action</th>
@@ -265,8 +260,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                                                     <td><?= $index + 1; ?></td>
                                                     <td><?= 'Rp ' . number_format($item['harga'], 0, ',', '.'); ?></td>
                                                     <td><?= htmlspecialchars($item['berat']); ?> Kg</td>
-                                                    <td><?= htmlspecialchars($item['potongan']); ?> Kg</td>
-                                                    <td><?= htmlspecialchars($item['bersih']); ?> Kg</td>
                                                     <td><?= 'Rp ' . number_format($item['total'], 0, ',', '.'); ?></td>
                                                     <td><?= htmlspecialchars($item['tanggal']); ?></td>
                                                     <td>
@@ -292,13 +285,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="inputModalLabel">
-                                    Input Data Coklat
+                                    Input Data mente
                                 </h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <form method="POST" id="coklatForm">
+                            <form method="POST" id="menteForm">
                                 <div class="modal-body">
                                     <div class="form-group">
                                         <label for="harga">Harga</label>
@@ -307,16 +300,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                                     <div class="form-group">
                                         <label for="berat">Berat (KG)</label>
                                         <input type="number" class="form-control" id="berat" name="berat" required
-                                            step="0.01">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="potongan">Potongan</label>
-                                        <input type="number" class="form-control" id="potongan" name="potongan" required
-                                            step="0.01">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="bersih">Bersih</label>
-                                        <input type="number" class="form-control" id="bersih" name="bersih" readonly
                                             step="0.01">
                                     </div>
                                     <div class="form-group">
@@ -338,7 +321,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                 </div>
 
                 <script>
-                    document.getElementById('coklatForm').addEventListener('submit', async function(e) {
+                    document.getElementById('menteForm').addEventListener('submit', async function(e) {
                         e.preventDefault(); // Cegah form dari pengiriman default
 
                         const formData = new FormData(this);
@@ -397,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                         $("#berat, #potongan").on("input", function() {
                             const berat = parseFloat($("#berat").val()) || 0;
                             const potongan = parseFloat($("#potongan").val()) || 0;
-                            const bersih = (berat - potongan).toFixed(1);
+                            const bersih = berat - potongan;
                             $("#bersih").val(bersih);
 
                             const harga =
@@ -406,7 +389,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all']) && $_PO
                                     .val()
                                     .replace(/[^0-9]/g, "")
                                 ) || 0;
-                            const total = (harga * bersih).toFixed(0);
+                            const total = harga * bersih;
                             $("#Total").val(formatRupiah(total.toString(), "Rp"));
                         });
 
